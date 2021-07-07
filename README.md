@@ -8,7 +8,7 @@ ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx f
 The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.
 
 
-THE COOLEST PART: The Printer.
+## THE COOLEST PART: The Printer.
 
 SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous isles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.
 
@@ -20,7 +20,7 @@ THE FILE MENU: There are three options: Configure, Select Database, and Exit.
  - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.
 
 
-FUNCTIONS EXPLAINED:
+## FUNCTIONS EXPLAINED:
 
  - RELOAD: Once you've selected your database file and set your printer IP address, it's time to add some stuff to your list.  In your .xlsx database (aka, spreadsheet), add the quantities in the Qty column to the things you need to buy.  If you have SL open, after saving the database file you can press the 'Reload' button and your list will be displayed in the 'Selected items' box. In this way you can keep track of what you have added to your list as you go.
 
