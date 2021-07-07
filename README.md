@@ -1,5 +1,5 @@
 # shoppingList
-![The List and The Printer]{./pics/sm_ShpLstPrinter.jpg}
+![The List and The Printer]()./pics/sm_ShpLstPrinter.jpg)
 
 ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
 
