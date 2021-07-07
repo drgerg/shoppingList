@@ -28,5 +28,7 @@ THE FILE MENU: There are three options: Configure, Select Database, and Exit.
 
  - PRINT: This . . . well, it prints your list.  Afterwards you will see a box asking if you want to exit or not.  If you exit, your current selections will be retained in the database.  If you want to remove them, select 'No' and go back and use the Clear All function to remove them.
 
+I compiled this using pyInstaller.  I chose the 1-Folder option rather than the 1-File option because it seems to load and run quicker.  Unzip the .zip file somewhere and make yourself a shortcut to the .exe file.  I have mine pinned to my Taskbar.
+
 You can always find the current version number in the 'About' dialog.
 
