@@ -1,7 +1,7 @@
 # shoppingList
 ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
 
-ShoppingList is written in Python. Tkinter is the Python module that creates the graphical interface.
+ShoppingList is written for Windows in Python. Tkinter is the Python module that creates the graphical interface.
 
 ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx file. SL reads data from the first four columns.
 
