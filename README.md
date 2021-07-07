@@ -16,7 +16,7 @@ The python-escpos module is used to interface to with the printer.  It contains 
 
 THE FILE MENU: There are three options: Configure, Select Database, and Exit.  
  - Configure lets you set the IP address for the recipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in thesame folder with ShoppingList.exe.
- -- When you set the title text, try to keep it less than around 20 characters long.
+    - When you set the title text, try to keep it less than around 20 characters long.
  - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.
 
 
