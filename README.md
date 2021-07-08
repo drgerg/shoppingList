@@ -5,9 +5,9 @@ ShoppingList is a no-cloud solution to your shopping woes. Private, secure and c
 
 ShoppingList is written for Windows in Python. Tkinter is the Python module that creates the graphical interface.
 
-ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx file. SL reads data from the first four columns.
+ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx file. It displays your compiled list in a window, and just to the right of it, gives you a space to type notes you want to appear on the final printed list.
 
-The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.
+SL reads data from the first four columns.  The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.
 
 
 ## THE COOLEST PART: The Printer.
