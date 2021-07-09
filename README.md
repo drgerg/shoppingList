@@ -12,7 +12,7 @@ SL reads data from the first four columns.  The first column must be named 'Qty'
 
 ## THE COOLEST PART: The Printer.
 
-SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous isles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.
+SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous aisles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.
 
 The python-escpos module is used to interface to with the printer.  It contains support for serial and USB protocols as well as network, but network is so simple that it is currently the default transport protocol. Perhaps in the future the other protocols can be added.
 
