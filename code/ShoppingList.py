@@ -19,27 +19,20 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tkinter as tk
-import openpyxl as xl
-from tkinter import Tk
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import simpledialog
-from tkinter import INSERT
-from tkinter import Toplevel
+from tkinter import Tk,ttk,filedialog,messagebox,simpledialog,INSERT,Toplevel
 from tkinter.font import Font
 from datetime import datetime
 from configparser import ConfigParser
 import time,sys,csv,os, textwrap
-import xlrd as pxl
 import openpyxl as xl
 import os, warnings, unicodedata, csv, xlrd, pathlib
+from os import path
 from escpos import *
 from escpos.printer import Network
 
-version = "v.0.9.2"
+
+version = "v1.1"
 confparse = ConfigParser()
-from os import path
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
 def main():
@@ -51,7 +44,6 @@ def main():
         text4.delete('1.0','end')
         text4.insert('1.0', noteText)
     window.update()
-    homeFolder = os.path.expanduser("~")
     confparse.read('ShoppingList.ini')
     file = confparse.get('database_loc', 'dbloc')
     ptrIP = confparse.get('printer_address', 'ipaddr')
@@ -60,12 +52,12 @@ def main():
         file = getDataFileLoc()
     if file == "setup":
         file = getDataFileLoc()
-        configWindow(homeFolder)
+        configWindow()
     else:
         text2.delete("1.0", 'end')
         text2.insert("1.0", file + " was selected as your Source database.")
         colName = "Qty"
-        final = makeShoppingList(file,homeFolder,colName)
+        final = makeShoppingList(file,colName)
         #
         ## MAKE THE STRING FOR DISPLAY AND PRINTING. SKIP 'NONE' CELLS.
         #
@@ -78,7 +70,7 @@ def main():
                 tupString = tupString + tup[2] + ' '
             tupString = tupString + tup[3] + "\n"
             finalStr = finalStr + tupString
-        listFrame = tk.LabelFrame(window, text="Selected Items:")
+        listFrame = ttk.LabelFrame(window, text="Selected Items:")
         listFrame.grid(column=1, row=2, padx=6, sticky='w')
         #
         ##  SHOW THE LIST IN THE LEFT HAND TEXT BOX.
@@ -88,7 +80,7 @@ def main():
         final_output.insert('1.0',finalStr)
         final_output['state'] = 'disabled'
         text3.delete("1.0", 'end')
-        text3.insert(INSERT, "This is your list. If it's empty, go put your quantities in the spreadsheet. Hit the Print button to print.")
+        text3.insert(INSERT, "This is your list. If it's empty, add quantities in the spreadsheet & save. Reload, then Print.")
 
         button_prn = ttk.Button(controlsFrame, text="Print", command=lambda:printIt(finalStr))                  # "Print" button
         button_prn.grid(column=0, row=7, padx=10, pady=10, sticky='n')                                          # Place Print button in grid
@@ -146,10 +138,9 @@ def printIt(final):
 #
 ## COMPILE THE SHOPPING LIST
 #
-def makeShoppingList(file,homeFolder,colName):
+def makeShoppingList(file,colName):
     # Open the right file
     filename = file
-    folder = homeFolder
     final = []                                  # list for final output
     ## these next two lines are a sad way to stop getting a
     ## warning about the lack of a default style
@@ -161,7 +152,7 @@ def makeShoppingList(file,homeFolder,colName):
             if c.value == colName:
                 cv = c.col_idx              # cv stores column index.
         ##
-        ### LOOK THROUGH THE SPREADSHEET AND APP'end' EVERY ROW THAT HAS 1 OR MORE IN THE QTY COLUMN.
+        ### LOOK THROUGH THE SPREADSHEET AND APPEND EVERY ROW THAT HAS 1 OR MORE IN THE QTY COLUMN.
         ##
         for row in ws1.iter_rows(min_row=2, min_col=cv, max_col=4, values_only=True):    # Check cell validity
             cell = row[0]
@@ -226,20 +217,21 @@ def exit():
 window = Tk()  # Create the root window.  'root' is the common name, but I named this one 'window'.
 window.title("Shopping List Data Compiler and Printer")  # Set window title
 winWd = 1000  # Set window size and placement
-winHt = 800
+winHt = 640
 x_Left = int(window.winfo_screenwidth() / 2 - winWd / 2)
-y_Top = int(window.winfo_screenheight() / 2 - winHt / 2)
+y_Top = int(window.winfo_screenheight() / 2 - winHt / 2 - 32)
 window.geometry(str(winWd) + "x" + str(winHt) + "+{}+{}".format(x_Left, y_Top))
 window.config(background="white")  # Set window background color
 window.columnconfigure(0, weight=1)
 window.rowconfigure(0, weight=1)
-label_file_explorer = tk.Label(
+label_file_explorer = ttk.Label(
     window,  # Create a File Explorer label
     text="Shopping List Data Compiler and Printer",
     width=winWd,
     font=18,
-    justify="center",
-    fg="green",
+    anchor=tk.CENTER,
+    relief='ridge',
+    foreground="green",
 )
 #
 ##
@@ -249,10 +241,10 @@ def featureNotReady():
 #
 ## DEFINE THE CONFIGURE WINDOW
 #
-def configWindow(homeFolder):
+def configWindow():
     cw = Toplevel(window)
     cw.title("Configure Options")
-    cwinWd = 400  # Set window size and placement
+    cwinWd = 300  # Set window size and placement
     cwinHt = 400
     x_Left = int(window.winfo_screenwidth() / 2 - cwinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - cwinHt / 2)
@@ -261,7 +253,7 @@ def configWindow(homeFolder):
     cw.columnconfigure(0, weight=1)
     cw.rowconfigure(0, weight=1)
     cw.iconbitmap('./ico/shoppinglist_icon.ico')
-    cwlabel = tk.Label(cw, font=18, text ="Configure Options")
+    cwlabel = ttk.Label(cw, width=cwinWd, font=18, anchor=tk.CENTER, relief='ridge', text ="Configure Options")
     cwlabel.grid(column=0, row=0, sticky="n")  # Place label in grid
 
     confparse.read('ShoppingList.ini')
@@ -281,15 +273,15 @@ def configWindow(homeFolder):
     ## Set up Config text entry boxes
     #
     confIPVar = tk.StringVar()
-    confIPLabel = tk.Label(cw, text="Printer IP Address")
-    confIPEntry = tk.Entry(cw, textvariable = confIPVar, width=18)
+    confIPLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="Printer IP Address")
+    confIPEntry = ttk.Entry(cw, justify='center', textvariable = confIPVar, width=18)
     confIPLabel.grid(column=0, row=1, padx=10, pady=10, sticky='n')
     confIPEntry.grid(column=0, row=2, padx=10, pady=10, sticky='n')
     confIPVar.set(ptrIP)
 
     confTitleVar = tk.StringVar()
-    confTitleLabel = tk.Label(cw, text="List Title")
-    confTitleEntry = tk.Entry(cw, textvariable = confTitleVar, width=18)
+    confTitleLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="List Title")
+    confTitleEntry = ttk.Entry(cw, justify='center', textvariable = confTitleVar, width=18)
     confTitleLabel.grid(column=0, row=3, padx=10, pady=10, sticky='n')
     confTitleEntry.grid(column=0, row=4, padx=10, pady=10, sticky='n')
     confTitleVar.set(listTitle)
@@ -318,7 +310,7 @@ def aboutWindow():
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
     aw.iconbitmap('./ico/shoppinglist_icon.ico')
-    awlabel = tk.Label(aw, font=18, text ="About " + version)
+    awlabel = ttk.Label(aw, width=awinWd, font=18, text ="About " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
     aw.rowconfigure(0, weight=1)
@@ -341,7 +333,7 @@ def helpWindow():
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
     hw.iconbitmap('./ico/shoppinglist_icon.ico')
-    hwlabel = tk.Label(hw, height=8, font=18, text ="Help")
+    hwlabel = ttk.Label(hw, width=hwinWd, font=18, text ="Help")
     hw.columnconfigure(0, weight=1)
     hw.rowconfigure(0, weight=1)
     hw.rowconfigure(1, weight=1)
@@ -378,9 +370,8 @@ tk.Frame(window)
 menu = tk.Menu(window)
 window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
-homeFolder = os.path.expanduser("~")
 fileMenu = tk.Menu(menu, tearoff=False)
-fileMenu.add_command(label="Configure", command=lambda:configWindow(homeFolder))
+fileMenu.add_command(label="Configure", command=lambda:configWindow())
 fileMenu.add_command(label="Select Database", command=getDataFileLoc)
 fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
@@ -405,10 +396,10 @@ def setCtrlVals():
     clearSL = clearSLVar.get()
     return colName, clearSL
 
-controlsFrame = tk.LabelFrame(window, text="Options")             # larger frame to hold Radio Button frame
-controlsFrame.grid(column=0, row=2, padx=10, sticky='nw')
+controlsFrame = ttk.LabelFrame(window, text="Options")             # larger frame to hold Radio Button frame
+controlsFrame.grid(column=0, row=2, padx=20, sticky='nw')
 colNameVar = tk.StringVar(value="CBL_NO")
-rbframe = tk.LabelFrame(controlsFrame, text="Choose What You Will")  # Frame within a frame for Radio Buttons
+rbframe = ttk.LabelFrame(controlsFrame, text="Choose What You Will")  # Frame within a frame for Radio Buttons
 rbframe.grid(column=0, row=2, padx=10, pady=10, sticky='n')
 #
 ## Set up push-buttons
@@ -429,19 +420,19 @@ clearSLChkBox.grid(column=0, row=4, sticky='nw')                                
 #
 ## Set up Notes and Reminders box
 #
-T4Frame = tk.LabelFrame(window, text="Notes and Reminders:")             # larger frame to hold Radio Button frame
+T4Frame = ttk.LabelFrame(window, text="Notes and Reminders:")             # larger frame to hold Radio Button frame
 T4Frame.grid(column=2, row=2, padx=6, sticky='w')
 #
 ## Set up text windows
 #
-text1 = tk.Text(window, height=6, width=150, wrap='word', font=nnFont)
+# text1 = tk.Text(window, height=6, width=150, wrap='word', font=nnFont)
 text2 = tk.Text(window, height=2, width=150, font=nnFont)
 text3 = tk.Text(window, height=3, width=150, font=nnFont)
 text4 = tk.Text(T4Frame, height=28, width=40, wrap='word', font=nnFont)
 
 label_file_explorer.grid(column=0, columnspan=7, row=0, sticky="n")  # Place label in grid
 
-text1.grid(column=0, columnspan=7, row=1, padx=10)
+# text1.grid(column=0, columnspan=7, row=1, padx=10)
 text2.grid(column=0, columnspan=7, row=6, padx=10)
 text3.grid(column=0, columnspan=7, row=7, padx=10)
 text4.grid(column=1, row=1)
