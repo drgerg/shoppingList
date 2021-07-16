@@ -1,6 +1,8 @@
 # shoppingList
 ![The List and The Printer](./pics/sm_ShpLstPrinter.jpg)
 
+#### v1.6 introduces the automatic PDF backup list.
+
 ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
 
 ShoppingList is written for Windows in Python. Tkinter is the Python module that creates the graphical interface.
