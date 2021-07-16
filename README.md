@@ -21,6 +21,9 @@ THE FILE MENU: There are three options: Configure, Select Database, and Exit.
     - When you set the title text, try to keep it less than around 20 characters long.
  - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.
 
+SL optionally creates a PDF version of your list when you print. This file is saved in the folder where your Shopping List .xlsx file is. 
+
+You can actually use SL without a receipt printer by leaving the IP address at 192.168.254.254.  Select 'File/Configure' to set the IP address.
 
 ## FUNCTIONS EXPLAINED:
 
