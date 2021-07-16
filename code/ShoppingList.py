@@ -29,9 +29,10 @@ import os, warnings, unicodedata, csv, xlrd, pathlib
 from os import path
 from escpos import *
 from escpos.printer import Network
+from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.1"
+version = "v1.6"
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
@@ -110,23 +111,33 @@ def getNotes():
 def printIt(final):
     ptrIP = confparse.get('printer_address', 'ipaddr')
     listTitle = confparse.get('list_title', 'text')
-    kitchen = Network(ptrIP)                                #Printer IP Address
-    kitchen.set(align='center',width=2,height=2)
-    kitchen.text(listTitle + '\n')
+    autoPdf = confparse.get('auto_pdf', 'makePDF')
     tnow = datetime.now()
-    tnow = tnow.strftime("%B %d, %Y %H:%M:%S")
-    kitchen.set(align='center', width=1,height=1)
-    kitchen.text(tnow + '\n\n')
+    tnowStr = tnow.strftime("%B %d, %Y %H:%M:%S")
     stuff = getNotes()
-    stuff = textwrap.fill(stuff, width=48)
-    kitchen.set(align='left')
-    kitchen.text(stuff)
-    kitchen.text("\n\n\n")
-    kitchen.text(final)
-    kitchen.text("\n\n\n")
-    kitchen.cut()
-    text2.delete("1.0", 'end')
-    text2.insert("1.0", "Your list should be on the printer.")
+    stuffWrap = textwrap.fill(stuff, width=48)
+    print(type(ptrIP))
+    print(ptrIP)
+    if ptrIP != '192.168.254.254':
+        kitchen = Network(ptrIP)                                #Printer IP Address
+        kitchen.set(align='center',width=2,height=2)
+        kitchen.text(listTitle + '\n')
+        kitchen.set(align='center', width=1,height=1)
+        kitchen.text(tnowStr + '\n\n')
+        kitchen.set(align='left')
+        kitchen.text(stuffWrap)
+        kitchen.text("\n\n\n")
+        kitchen.text(final)
+        kitchen.text("\n\n\n")
+        kitchen.cut()
+        text2.delete("1.0", 'end')
+        text2.insert("1.0", "Your list should be on the printer.\n")
+    else:
+        text2.delete("1.0", 'end')
+        text2.insert("1.0", "The IP address for a receipt printer has not been configured.\n")
+    if autoPdf == 'yes':
+        pdfPrint(listTitle,tnow,stuffWrap,final)
+        text2.insert("2.0", "PDF list was created in your ShoppingList folder.")
     keepGoing = messagebox.askyesno("Hold Up.", "Exit? (Keeps List)")
     if keepGoing == 1:
         exit()
@@ -134,6 +145,44 @@ def printIt(final):
     else:
         text2.delete("1.0", 'end')
         main()
+
+def pdfPrint(lt,tn,stf,fnl):
+    listWid = 200                       ## establish a fixed width for the list.
+    noteStr = textwrap.wrap(stf, 48)    ## The Note text.
+    fnl = fnl.splitlines()
+    stfLen = len(noteStr)
+    fnlLen = len(fnl)
+    print(fnlLen)
+    listLen = (stfLen * 10) + 72 + (fnlLen * 10) + 60
+    confparse.read('ShoppingList.ini')
+    filePath = confparse.get('database_loc', 'dbloc')
+    tnfnStr = tn.strftime("%m%d%y%H%M%S")
+    tnowStr = tn.strftime("%B %d, %Y %H:%M:%S")
+    filenmStr = '/' + lt + '_' + tnfnStr + '.pdf'
+    splitPath = os.path.split(filePath)
+    savePath = splitPath[0]
+    outputFile = savePath + filenmStr
+    print(outputFile)
+    canvas = Canvas(outputFile, pagesize=(listWid,listLen))
+    canvas.setFont("Helvetica", 15)                 ## Font for List Title
+    tc = (listWid/2)
+    prRow = listLen - 40                            ## Start 1 inch (72 pt) below the top
+    canvas.drawCentredString(tc,prRow,lt)           ## Print the List Title
+    canvas.setFont("Helvetica", 7.5)                ## Font for everthing else
+    tnc = (listWid/2)
+    prRow = prRow - 10
+    canvas.drawCentredString(tnc,prRow,tnowStr)     ## Print the date / time
+    prRow = prRow - 24
+    for line in noteStr:
+        canvas.drawString(10, prRow, line)
+        prRow = prRow - 8
+    prRow = prRow - 24
+    for line in fnl:
+        canvas.drawString(10,prRow,line)     ## Print the shopping list data
+        prRow = prRow - 8
+    canvas.save()
+
+
 
 #
 ## COMPILE THE SHOPPING LIST
@@ -245,7 +294,7 @@ def configWindow():
     cw = Toplevel(window)
     cw.title("Configure Options")
     cwinWd = 300  # Set window size and placement
-    cwinHt = 400
+    cwinHt = 440
     x_Left = int(window.winfo_screenwidth() / 2 - cwinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - cwinHt / 2)
     cw.config(background="white")  # Set window background color
@@ -259,12 +308,16 @@ def configWindow():
     confparse.read('ShoppingList.ini')
     ptrIP = confparse.get('printer_address', 'ipaddr')
     listTitle = confparse.get('list_title', 'text')
+    autoPdf = confparse.get('auto_pdf', 'makePDF')
 
     def saveConf():
         ptrIP = confIPVar.get()
         listTitle = confTitleVar.get()
+        autoPdf = confPDFVar.get()
+        autoPdf = autoPdf.lower()
         confparse.set('printer_address', 'ipaddr', ptrIP)
         confparse.set('list_title','text', listTitle)
+        confparse.set('auto_pdf','makePDF',autoPdf)
         with open('ShoppingList.ini', 'w') as SLcnf:
             confparse.write(SLcnf)
         text2.delete("1.0", 'end')
@@ -274,18 +327,30 @@ def configWindow():
     #
     confIPVar = tk.StringVar()
     confIPLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="Printer IP Address")
+    confIPLabel.config(background = 'light blue')
+    confIPLabel2 = ttk.Label(cw, width=cwinWd, font=('Segoe UI',10), anchor=tk.CENTER, relief='groove', text="(Use 192.168.254.254 for no printer)")
+    confIPLabel2.config(background = 'light yellow')
     confIPEntry = ttk.Entry(cw, justify='center', textvariable = confIPVar, width=18)
     confIPLabel.grid(column=0, row=1, padx=10, pady=10, sticky='n')
-    confIPEntry.grid(column=0, row=2, padx=10, pady=10, sticky='n')
+    confIPLabel2.grid(column=0, row=2, padx=10, pady=10, sticky='n')
+    confIPEntry.grid(column=0, row=3, padx=10, pady=10, sticky='n')
     confIPVar.set(ptrIP)
 
     confTitleVar = tk.StringVar()
     confTitleLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="List Title")
+    confTitleLabel.config(background = 'light blue')
     confTitleEntry = ttk.Entry(cw, justify='center', textvariable = confTitleVar, width=18)
-    confTitleLabel.grid(column=0, row=3, padx=10, pady=10, sticky='n')
-    confTitleEntry.grid(column=0, row=4, padx=10, pady=10, sticky='n')
+    confTitleLabel.grid(column=0, row=4, padx=10, pady=10, sticky='n')
+    confTitleEntry.grid(column=0, row=5, padx=10, pady=10, sticky='n')
     confTitleVar.set(listTitle)
 
+    confPDFVar = tk.StringVar()
+    confPDFLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="Auto-create PDF List? (yes/no)")
+    confPDFLabel.config(background = 'light blue')
+    confPDFEntry = ttk.Entry(cw, justify='center', textvariable = confPDFVar, width=10)
+    confPDFLabel.grid(column=0, row=6, padx=10, pady=10, sticky='n')
+    confPDFEntry.grid(column=0, row=7, padx=10, pady=10, sticky='n')
+    confPDFVar.set(autoPdf)
 
     cwbutton_cancel = ttk.Button(cw, text="Close", command=cw.destroy)                      # "Close" button
     cwbutton_cancel.grid(column=0, row=8, padx=10, pady=10, sticky='n')                     # Place Close button in grid
@@ -348,11 +413,14 @@ def helpWindow():
     helpText.insert(INSERT, "ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.\n\n"
     "ShoppingList is written in Python. Tkinter is the Python module that creates the graphical interface.\n\n"
     "ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx file. SL reads data from the first four columns.\n\n"
-    "The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.\n\n\n"
+    "The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.\n\n"
+    "If you set up your Shopping List database (.xlsx file) right, your list will be printed in 'aisle order'.  Create a spreadsheet for a store. Save it in it's own .xlsx file.  In that file create a tab for each aisle. When you print, your items will be in tab order.\n\n"
     "THE COOLEST PART: The Printer.\n\n"
     "SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous isles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.\n\n"
     "The python-escpos module is used to interface to with the printer.  It contains support for serial and USB protocols as well as network, but network is so simple that it is currently the default transport protocol. Perhaps in the future the other protocols can be added.\n\n"
-    "THE FILE MENU: There are three options: Configure, Select Database, and Exit.  \n - Configure lets you set the IP address for the recipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in the"
+    "SL optionally creates a PDF version of your list when you print. This file is saved in the folder where your Shopping List .xlsx file is. \n\nYou can actually use SL without a receipt printer by leaving the IP address at 192.168.254.254."
+    "  Select 'File/Configure' to set the IP address.\n\n"
+    "THE FILE MENU: There are three options: Configure, Select Database, and Exit.  \n - Configure lets you set the IP address for the receipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in the"
     "same folder with ShoppingList.exe.\n - - When you set the title text, try to keep it less than around 20 characters long.\n"
     " - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.\n\n\n"
     "FUNCTIONS EXPLAINED:\n\n"
