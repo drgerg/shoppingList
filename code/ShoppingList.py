@@ -32,7 +32,7 @@ from escpos.printer import Network
 from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.6"
+version = "v1.6.1"
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
@@ -66,10 +66,10 @@ def main():
         for tup in final:
             tupString = '(' + str(tup[0]) + ') '
             if tup[1] != None:
-                tupString = tupString + tup[1] + ' '
+                tupString = tupString + str(tup[1]) + ' '
             if tup[2] != None:
-                tupString = tupString + tup[2] + ' '
-            tupString = tupString + tup[3] + "\n"
+                tupString = tupString + str(tup[2]) + ' '
+            tupString = tupString + str(tup[3]) + "\n"
             finalStr = finalStr + tupString
         listFrame = ttk.LabelFrame(window, text="Selected Items:")
         listFrame.grid(column=1, row=2, padx=6, sticky='w')
