@@ -32,7 +32,7 @@ from escpos.printer import Network
 from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.6.1"
+version = "v1.7"
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
@@ -70,13 +70,15 @@ def main():
             if tup[2] != None:
                 tupString = tupString + str(tup[2]) + ' '
             tupString = tupString + str(tup[3]) + "\n"
+            if len(tupString) > 46:
+                tupString = textwrap.fill(tupString, width=46, subsequent_indent='     ') + "\n"
             finalStr = finalStr + tupString
         listFrame = ttk.LabelFrame(window, text="Selected Items:")
-        listFrame.grid(column=1, row=2, padx=6, sticky='w')
+        listFrame.grid(column=1, row=2, sticky='ew')
         #
         ##  SHOW THE LIST IN THE LEFT HAND TEXT BOX.
         #
-        final_output = tk.Text(listFrame, height = 30, width = 40)
+        final_output = tk.Text(listFrame, height = 30, width = 46)
         final_output.grid(column=1, row=2, sticky='ns')
         final_output.insert('1.0',finalStr)
         final_output['state'] = 'disabled'
@@ -115,7 +117,7 @@ def printIt(final):
     tnow = datetime.now()
     tnowStr = tnow.strftime("%B %d, %Y %H:%M:%S")
     stuff = getNotes()
-    stuffWrap = textwrap.fill(stuff, width=48)
+    stuffWrap = textwrap.fill(stuff, width=46)
     print(type(ptrIP))
     print(ptrIP)
     if ptrIP != '192.168.254.254':
@@ -148,7 +150,7 @@ def printIt(final):
 
 def pdfPrint(lt,tn,stf,fnl):
     listWid = 200                       ## establish a fixed width for the list.
-    noteStr = textwrap.wrap(stf, 48)    ## The Note text.
+    noteStr = textwrap.wrap(stf, 44)    ## The Note text.
     fnl = fnl.splitlines()
     stfLen = len(noteStr)
     fnlLen = len(fnl)
@@ -209,6 +211,9 @@ def makeShoppingList(file,colName):
                 if cell != 0:
                     if cell != " ":
                         if cell >= 1:
+                            print(row)
+                            # rowWrappedList = textwrap.wrap(row, width=48)
+                            # for row in rowWrappedList:
                             final.append(row)    # Add valid cell contents to final.
     return final
 
@@ -272,6 +277,8 @@ y_Top = int(window.winfo_screenheight() / 2 - winHt / 2 - 32)
 window.geometry(str(winWd) + "x" + str(winHt) + "+{}+{}".format(x_Left, y_Top))
 window.config(background="white")  # Set window background color
 window.columnconfigure(0, weight=1)
+window.columnconfigure(1, weight=1)
+window.columnconfigure(2, weight=1)
 window.rowconfigure(0, weight=1)
 label_file_explorer = ttk.Label(
     window,  # Create a File Explorer label
@@ -488,15 +495,16 @@ clearSLChkBox.grid(column=0, row=4, sticky='nw')                                
 #
 ## Set up Notes and Reminders box
 #
-T4Frame = ttk.LabelFrame(window, text="Notes and Reminders:")             # larger frame to hold Radio Button frame
-T4Frame.grid(column=2, row=2, padx=6, sticky='w')
+
+T4Frame = ttk.LabelFrame(window, text="Notes and Reminders:")             # Frame for list Notes.
+T4Frame.grid(column=2, row=2, sticky='ew')
 #
 ## Set up text windows
 #
 # text1 = tk.Text(window, height=6, width=150, wrap='word', font=nnFont)
 text2 = tk.Text(window, height=2, width=150, font=nnFont)
 text3 = tk.Text(window, height=3, width=150, font=nnFont)
-text4 = tk.Text(T4Frame, height=28, width=40, wrap='word', font=nnFont)
+text4 = tk.Text(T4Frame, height=28, width=46, wrap='word', font=nnFont)
 
 label_file_explorer.grid(column=0, columnspan=7, row=0, sticky="n")  # Place label in grid
 
