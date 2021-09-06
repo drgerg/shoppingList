@@ -1,6 +1,10 @@
 # shoppingList
 ![The List and The Printer](./pics/sm_ShpLstPrinter.jpg)
 
+#### v1.7 improves word-wrap
+
+The Notes section did alright with wrapping, but in the actual list itself, not so much.  So now, items in the list that are longer than the paper is wide are wrapped and indented on the second and subsequent lines.
+
 #### v1.6 introduces the automatic PDF backup list.
 
 ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
