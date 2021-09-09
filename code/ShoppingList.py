@@ -21,6 +21,7 @@
 import tkinter as tk
 from tkinter import Tk,ttk,filedialog,messagebox,simpledialog,INSERT,Toplevel
 from tkinter.font import Font
+# from tkinter.tix import *
 from datetime import datetime
 from configparser import ConfigParser
 import time,sys,csv,os, textwrap
@@ -32,63 +33,68 @@ from escpos.printer import Network
 from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.7"
+version = "v1.7.2"
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
 def main():
-    noteText = getNotes()
-    if noteText == "\n":
-        text4.delete('1.0','end')
-        text4.insert('1.0', 'Notes: ')
-    else:
-        text4.delete('1.0','end')
-        text4.insert('1.0', noteText)
-    window.update()
-    confparse.read('ShoppingList.ini')
-    file = confparse.get('database_loc', 'dbloc')
-    ptrIP = confparse.get('printer_address', 'ipaddr')
-    pathExists = os.path.exists(file)
-    if pathExists == False:
-        file = getDataFileLoc()
-    if file == "setup":
-        file = getDataFileLoc()
-        configWindow()
-    else:
-        text2.delete("1.0", 'end')
-        text2.insert("1.0", file + " was selected as your Source database.")
-        colName = "Qty"
-        final = makeShoppingList(file,colName)
-        #
-        ## MAKE THE STRING FOR DISPLAY AND PRINTING. SKIP 'NONE' CELLS.
-        #
-        finalStr = ""
-        for tup in final:
-            tupString = '(' + str(tup[0]) + ') '
-            if tup[1] != None:
-                tupString = tupString + str(tup[1]) + ' '
-            if tup[2] != None:
-                tupString = tupString + str(tup[2]) + ' '
-            tupString = tupString + str(tup[3]) + "\n"
-            if len(tupString) > 46:
-                tupString = textwrap.fill(tupString, width=46, subsequent_indent='     ') + "\n"
-            finalStr = finalStr + tupString
-        listFrame = ttk.LabelFrame(window, text="Selected Items:")
-        listFrame.grid(column=1, row=2, sticky='ew')
-        #
-        ##  SHOW THE LIST IN THE LEFT HAND TEXT BOX.
-        #
-        final_output = tk.Text(listFrame, height = 30, width = 46)
-        final_output.grid(column=1, row=2, sticky='ns')
-        final_output.insert('1.0',finalStr)
-        final_output['state'] = 'disabled'
-        text3.delete("1.0", 'end')
-        text3.insert(INSERT, "This is your list. If it's empty, add quantities in the spreadsheet & save. Reload, then Print.")
-
-        button_prn = ttk.Button(controlsFrame, text="Print", command=lambda:printIt(finalStr))                  # "Print" button
-        button_prn.grid(column=0, row=7, padx=10, pady=10, sticky='n')                                          # Place Print button in grid
-
+    try:
+        noteText = getNotes()
+        if noteText == "\n":
+            text4.delete('1.0','end')
+            text4.insert('1.0', 'Notes: ')
+        else:
+            text4.delete('1.0','end')
+            text4.insert('1.0', noteText)
         window.update()
+        confparse.read('ShoppingList.ini')
+        file = confparse.get('database_loc', 'dbloc')
+        ptrIP = confparse.get('printer_address', 'ipaddr')
+        pathExists = os.path.exists(file)
+        if pathExists == False:
+            file = getDataFileLoc()
+        if file == "setup":
+            file = getDataFileLoc()
+            configWindow()
+        else:
+            text2.delete("1.0", 'end')
+            text2.insert("1.0", file + " was selected as your Source database.")
+            colName = "Qty"
+            final = makeShoppingList(file,colName)
+            #
+            ## MAKE THE STRING FOR DISPLAY AND PRINTING. SKIP 'NONE' CELLS.
+            #
+            finalStr = ""
+            for tup in final:
+                tupString = '(' + str(tup[0]) + ') '
+                if tup[1] != None:
+                    tupString = tupString + str(tup[1]) + ' '
+                if tup[2] != None:
+                    tupString = tupString + str(tup[2]) + ' '
+                if tup[3] != None:
+                    tupString = tupString + str(tup[3]) + "\n"
+                else:
+                    tupString = tupString + "\n"
+                if len(tupString) > 46:
+                    tupString = textwrap.fill(tupString, width=46, subsequent_indent='     ') + "\n"
+                finalStr = finalStr + tupString
+            listFrame = ttk.LabelFrame(window, text="Selected Items:")
+            listFrame.grid(column=1, row=2, sticky='ew')
+            #
+            ##  SHOW THE LIST IN THE LEFT HAND TEXT BOX.
+            #
+            final_output = tk.Text(listFrame, height = 30, width = 46)
+            final_output.grid(column=1, row=2, sticky='ns')
+            final_output.insert('1.0',finalStr)
+            final_output['state'] = 'disabled'
+            text3.delete("1.0", 'end')
+            text3.insert(INSERT, "This is your list. If it's empty, add quantities in the spreadsheet & save. Reload, then Print.")
+            button_prn = ttk.Button(controlsFrame, text="Print", command=lambda:printIt(finalStr))                  # "Print" button
+            button_prn.grid(column=0, row=7, padx=10, pady=10, sticky='n')                                          # Place Print button in grid
+            window.update()
+    except PermissionError:
+        tk.messagebox.showinfo("Database Open Error.", "You must close the database first.")
+        window.mainloop()
 
 def getDataFileLoc():
     text2.delete("1.0", 'end')
@@ -118,8 +124,8 @@ def printIt(final):
     tnowStr = tnow.strftime("%B %d, %Y %H:%M:%S")
     stuff = getNotes()
     stuffWrap = textwrap.fill(stuff, width=46)
-    print(type(ptrIP))
-    print(ptrIP)
+    # print(type(ptrIP))
+    # print(ptrIP)
     if ptrIP != '192.168.254.254':
         kitchen = Network(ptrIP)                                #Printer IP Address
         kitchen.set(align='center',width=2,height=2)
@@ -154,7 +160,7 @@ def pdfPrint(lt,tn,stf,fnl):
     fnl = fnl.splitlines()
     stfLen = len(noteStr)
     fnlLen = len(fnl)
-    print(fnlLen)
+    # print(fnlLen)
     listLen = (stfLen * 10) + 72 + (fnlLen * 10) + 60
     confparse.read('ShoppingList.ini')
     filePath = confparse.get('database_loc', 'dbloc')
@@ -164,7 +170,7 @@ def pdfPrint(lt,tn,stf,fnl):
     splitPath = os.path.split(filePath)
     savePath = splitPath[0]
     outputFile = savePath + filenmStr
-    print(outputFile)
+    # print(outputFile)
     canvas = Canvas(outputFile, pagesize=(listWid,listLen))
     canvas.setFont("Helvetica", 15)                 ## Font for List Title
     tc = (listWid/2)
@@ -211,11 +217,13 @@ def makeShoppingList(file,colName):
                 if cell != 0:
                     if cell != " ":
                         if cell >= 1:
-                            print(row)
+                            # print(row)
                             # rowWrappedList = textwrap.wrap(row, width=48)
                             # for row in rowWrappedList:
                             final.append(row)    # Add valid cell contents to final.
     return final
+
+
 
 #
 ## CLEAR SELECTIONS FROM THE SHOPPING LIST SPREADSHEET
@@ -396,6 +404,7 @@ def aboutWindow():
 ## DEFINE THE HELP WINDOW
 #
 def helpWindow():
+
     hw = Toplevel(window)
     hw.title("Help")
     hwinWd = 400  # Set window size and placement
@@ -417,27 +426,29 @@ def helpWindow():
     hwlabel.grid(column=0, columnspan=3, row=0, padx=10, pady=10)  # Place label in grid
     helpText.grid(column=0, row=1)
     helpsb.grid(column=1, row=1, sticky='ns')
-    helpText.insert(INSERT, "ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.\n\n"
-    "ShoppingList is written in Python. Tkinter is the Python module that creates the graphical interface.\n\n"
-    "ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx file. SL reads data from the first four columns.\n\n"
-    "The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.\n\n"
-    "If you set up your Shopping List database (.xlsx file) right, your list will be printed in 'aisle order'.  Create a spreadsheet for a store. Save it in it's own .xlsx file.  In that file create a tab for each aisle. When you print, your items will be in tab order.\n\n"
-    "THE COOLEST PART: The Printer.\n\n"
-    "SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous isles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.\n\n"
-    "The python-escpos module is used to interface to with the printer.  It contains support for serial and USB protocols as well as network, but network is so simple that it is currently the default transport protocol. Perhaps in the future the other protocols can be added.\n\n"
-    "SL optionally creates a PDF version of your list when you print. This file is saved in the folder where your Shopping List .xlsx file is. \n\nYou can actually use SL without a receipt printer by leaving the IP address at 192.168.254.254."
-    "  Select 'File/Configure' to set the IP address.\n\n"
-    "THE FILE MENU: There are three options: Configure, Select Database, and Exit.  \n - Configure lets you set the IP address for the receipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in the"
-    "same folder with ShoppingList.exe.\n - - When you set the title text, try to keep it less than around 20 characters long.\n"
-    " - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.\n\n\n"
-    "FUNCTIONS EXPLAINED:\n\n"
-    " - RELOAD: Once you've selected your database file and set your printer IP address, it's time to add some stuff to your list.  In your .xlsx database (aka, spreadsheet), add the quantities in the Qty column to the things you need to buy.  "
-    "If you have SL open, after saving the database file you can press the 'Reload' button and your list will be displayed in the 'Selected items' box. In this way you can keep track of what you have added to your list as you go.\n\n"
-    " - CLEAR ALL: If you want to clear your selections from your database after printing your list, there are two steps:  1) Check the 'Clear All Qtys' checkbox, and 2) press the 'Clear All' button.  If you press the button without checking the box,"
-    "your selections will NOT be cleared, and you will see a info box telling you just that.\n\n"
-    " - PRINT: This . . . well, it prints your list.  Afterwards you will see a box asking if you want to exit or not.  If you exit, your current selections will be retained in the database.  If you want to remove them, select 'No' and go back and use the Clear All function to remove them.\n\n"
-    "You can always find the current version number in the 'About' dialog."
-    )
+    with open("helpText.txt", "r") as f:
+        hlptxt = f.read()
+    helpText.insert(INSERT, hlptxt)
+#
+## Open the data file for editing
+#
+def editData():
+    confparse.read('ShoppingList.ini')
+    file = confparse.get('database_loc', 'dbloc')
+    try:
+        os.startfile(file)
+    except PermissionError:
+        tk.messagebox.showinfo("Database Open Error.", "You must close the database first.")
+
+
+#
+# "Options" frames them nicely.
+# #
+def setCtrlVals():
+    colName = "Qty"
+    clearSL = clearSLVar.get()
+    return colName, clearSL
+
 #
 ## MENU AND MENU ITEMS
 #
@@ -461,21 +472,9 @@ menu.add_cascade(label="Help", menu=editMenu)
 # The secret was getting the path stuff right in the pyinstaller command line: pyinstaller --add-binary=".\ico\shoppinglist_icon.ico;ico" --noconsole --icon=shoppinglist_icon.ico NextNum.py
 #
 window.iconbitmap('./ico/shoppinglist_icon.ico')
-#
-## SET UP RADIO BUTTONS FOR COLUMN NAME SELECTION
-#
-# "Options" frames them nicely.
-#
-def setCtrlVals():
-    colName = "Qty"
-    clearSL = clearSLVar.get()
-    return colName, clearSL
 
 controlsFrame = ttk.LabelFrame(window, text="Options")             # larger frame to hold Radio Button frame
 controlsFrame.grid(column=0, row=2, padx=20, sticky='nw')
-colNameVar = tk.StringVar(value="CBL_NO")
-rbframe = ttk.LabelFrame(controlsFrame, text="Choose What You Will")  # Frame within a frame for Radio Buttons
-rbframe.grid(column=0, row=2, padx=10, pady=10, sticky='n')
 #
 ## Set up push-buttons
 #
@@ -483,9 +482,13 @@ button_clear = ttk.Button(controlsFrame, text="Clear All", command=clearTheList)
 button_clear.grid(column=0, row=9, padx=10, pady=10, sticky='n')                        # Place Clear button in grid
 button_reload = ttk.Button(controlsFrame, text="Reload", command=main)                  # "Reload" button
 button_reload.grid(column=0, row=8, padx=10, pady=10, sticky='n')                       # Place Reload button in grid
+button_editData = ttk.Button(controlsFrame, text="Edit Database", command=editData)                  # "Reload" button
+button_editData.grid(column=0, row=10, padx=10, pady=10, sticky='n')                       # Place Reload button in grid
 button_exit = ttk.Button(controlsFrame, text="Exit", command=exit)                      # "Exit" button
-button_exit.grid(column=0, row=10, padx=10, pady=10, sticky='n')                        # Place Exit button in grid
+button_exit.grid(column=0, row=11, padx=10, pady=10, sticky='n')                        # Place Exit button in grid
 #
+# editDataTip = Balloon(window)
+# editDataTip.bind_widget(button_editData,balloonmsg="Open your database, make your edit, close database.")
 #
 ## Set up check boxes
 #
