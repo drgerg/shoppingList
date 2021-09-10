@@ -1,6 +1,12 @@
 # shoppingList
 ![The List and The Printer](./pics/sm_ShpLstPrinter.jpg)
 
+#### v1.8 adds list title options, smoother overall functioning
+
+I wanted SL to generally create a list title from the filename of the database I had loaded, so now that option exists in the Configuration menu.  I tweaked some other stuff here and there, too, in order to make getting from point A to B easier.
+
+And, in between 1.7 and 1.8 I added a button that opens your database for editing in the system default application for spreadsheets.  I like that.
+
 #### v1.7 improves word-wrap
 
 The Notes section did alright with wrapping, but in the actual list itself, not so much.  So now, items in the list that are longer than the paper is wide are wrapped and indented on the second and subsequent lines.
