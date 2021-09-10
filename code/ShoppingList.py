@@ -21,7 +21,6 @@
 import tkinter as tk
 from tkinter import Tk,ttk,filedialog,messagebox,simpledialog,INSERT,Toplevel
 from tkinter.font import Font
-# from tkinter.tix import *
 from datetime import datetime
 from configparser import ConfigParser
 import time,sys,csv,os, textwrap
@@ -33,7 +32,7 @@ from escpos.printer import Network
 from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.7.2"
+version = "v1.8"
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
@@ -50,12 +49,14 @@ def main():
         confparse.read('ShoppingList.ini')
         file = confparse.get('database_loc', 'dbloc')
         ptrIP = confparse.get('printer_address', 'ipaddr')
+        listTitle = confparse.get('list_title', 'text')
         pathExists = os.path.exists(file)
         if pathExists == False:
-            file = getDataFileLoc()
+            getDataFileLoc()
+            file = confparse.get('database_loc', 'dbloc')
         if file == "setup":
-            file = getDataFileLoc()
-            configWindow()
+            getDataFileLoc()
+            file = confparse.get('database_loc', 'dbloc')
         else:
             text2.delete("1.0", 'end')
             text2.insert("1.0", file + " was selected as your Source database.")
@@ -102,15 +103,26 @@ def getDataFileLoc():
     homeFolder = os.path.expanduser("~")
     confparse.read('ShoppingList.ini')
     file = confparse.get('database_loc', 'dbloc')
+    autoTsh = int(confparse.get('list_title','autotsh'))
     file = filedialog.askopenfilename(initialdir = homeFolder,
                                 title = "Navigate to ShoppingList.xlsx Location.",
                                 filetypes = (("Excel Files",".xlsx"),))
     confparse.set('database_loc', 'dbloc', file)
+    fnPath = file
+    if autoTsh == 1:
+        listTitle, lt_ext = os.path.splitext(os.path.basename(fnPath))
+        confparse.set('list_title', 'text', listTitle)
+    if autoTsh == 0:
+        listTitle = confparse.get('list_title', 'text')
+        if listTitle == "":
+            listTitle = "Shopping List"
+            confparse.set('list_title', 'text', listTitle)
     with open('ShoppingList.ini', 'w') as SLcnf:
         confparse.write(SLcnf)
     text2.delete("1.0", 'end')
-    text2.insert("1.0", file + " was selected as your Source database. Press 'Reload' to see your list.")
-    return file
+    text2.insert("1.0", file + " was selected as your Source database.")
+    main()
+    # return file
 
 def getNotes():
     noteText = text4.get('1.0', 'end')
@@ -119,13 +131,13 @@ def getNotes():
 def printIt(final):
     ptrIP = confparse.get('printer_address', 'ipaddr')
     listTitle = confparse.get('list_title', 'text')
-    autoPdf = confparse.get('auto_pdf', 'makePDF')
+    if listTitle == "":
+        listTitle = "Shopping List"
+    autoPdf = int(confparse.get('auto_pdf', 'makePDF'))
     tnow = datetime.now()
     tnowStr = tnow.strftime("%B %d, %Y %H:%M:%S")
     stuff = getNotes()
     stuffWrap = textwrap.fill(stuff, width=46)
-    # print(type(ptrIP))
-    # print(ptrIP)
     if ptrIP != '192.168.254.254':
         kitchen = Network(ptrIP)                                #Printer IP Address
         kitchen.set(align='center',width=2,height=2)
@@ -143,7 +155,7 @@ def printIt(final):
     else:
         text2.delete("1.0", 'end')
         text2.insert("1.0", "The IP address for a receipt printer has not been configured.\n")
-    if autoPdf == 'yes':
+    if autoPdf == 1:
         pdfPrint(listTitle,tnow,stuffWrap,final)
         text2.insert("2.0", "PDF list was created in your ShoppingList folder.")
     keepGoing = messagebox.askyesno("Hold Up.", "Exit? (Keeps List)")
@@ -160,7 +172,6 @@ def pdfPrint(lt,tn,stf,fnl):
     fnl = fnl.splitlines()
     stfLen = len(noteStr)
     fnlLen = len(fnl)
-    # print(fnlLen)
     listLen = (stfLen * 10) + 72 + (fnlLen * 10) + 60
     confparse.read('ShoppingList.ini')
     filePath = confparse.get('database_loc', 'dbloc')
@@ -170,7 +181,6 @@ def pdfPrint(lt,tn,stf,fnl):
     splitPath = os.path.split(filePath)
     savePath = splitPath[0]
     outputFile = savePath + filenmStr
-    # print(outputFile)
     canvas = Canvas(outputFile, pagesize=(listWid,listLen))
     canvas.setFont("Helvetica", 15)                 ## Font for List Title
     tc = (listWid/2)
@@ -217,9 +227,6 @@ def makeShoppingList(file,colName):
                 if cell != 0:
                     if cell != " ":
                         if cell >= 1:
-                            # print(row)
-                            # rowWrappedList = textwrap.wrap(row, width=48)
-                            # for row in rowWrappedList:
                             final.append(row)    # Add valid cell contents to final.
     return final
 
@@ -314,8 +321,8 @@ def configWindow():
     y_Top = int(window.winfo_screenheight() / 2 - cwinHt / 2)
     cw.config(background="white")  # Set window background color
     cw.geometry(str(cwinWd) + "x" + str(cwinHt) + "+{}+{}".format(x_Left, y_Top))
-    cw.columnconfigure(0, weight=1)
-    cw.rowconfigure(0, weight=1)
+    cw.columnconfigure([0,1,2,3,4,5,6,7,8,9,10],weight=1)
+    cw.rowconfigure([0,1,2,3,4,5,6,7,8,9,10],weight=1)
     cw.iconbitmap('./ico/shoppinglist_icon.ico')
     cwlabel = ttk.Label(cw, width=cwinWd, font=18, anchor=tk.CENTER, relief='ridge', text ="Configure Options")
     cwlabel.grid(column=0, row=0, sticky="n")  # Place label in grid
@@ -323,55 +330,80 @@ def configWindow():
     confparse.read('ShoppingList.ini')
     ptrIP = confparse.get('printer_address', 'ipaddr')
     listTitle = confparse.get('list_title', 'text')
-    autoPdf = confparse.get('auto_pdf', 'makePDF')
+    autoPdf = str(confparse.get('auto_pdf', 'makePDF'))
+    autoTsh = int(confparse.get('list_title','autotsh'))
+    fnPath = confparse.get('database_loc', 'dbloc')
+    confIPVar = tk.StringVar()
+    confTitleVar = tk.StringVar()
+    confPDFVar = tk.IntVar(value=autoPdf)
+    confTSHVar = tk.IntVar(value=autoTsh)
 
     def saveConf():
         ptrIP = confIPVar.get()
         listTitle = confTitleVar.get()
-        autoPdf = confPDFVar.get()
-        autoPdf = autoPdf.lower()
+        autoPdf = str(confPDFVar.get())
+        autoTsh = str(confTSHVar.get())
         confparse.set('printer_address', 'ipaddr', ptrIP)
         confparse.set('list_title','text', listTitle)
+        confparse.set('list_title','autotsh', autoTsh)
         confparse.set('auto_pdf','makePDF',autoPdf)
         with open('ShoppingList.ini', 'w') as SLcnf:
             confparse.write(SLcnf)
         text2.delete("1.0", 'end')
-        text2.insert("1.0", "Printer IP address " + str(ptrIP) + " was saved in ShoppingList.ini.")
-    #
+        text2.insert("1.0", "Printer IP address " + str(ptrIP) + " and list title " + listTitle + " was saved in ShoppingList.ini.")
+        cw.destroy()
+
+    def setConfVals():
+        autoPdf = confPDFVar.get()
+        autoTsh = confTSHVar.get()
+        fnPath = confparse.get('database_loc', 'dbloc')
+        if autoTsh == 1:
+            listTitle, lt_ext = os.path.splitext(os.path.basename(fnPath))
+            confTitleVar.set(listTitle)
+        if autoTsh == 0:
+            listTitle = confparse.get('list_title', 'text')
+            if listTitle == "":
+                listTitle = "Shopping List"
+            confTitleVar.set(listTitle)
+        return autoPdf,autoTsh,listTitle
+    
     ## Set up Config text entry boxes
     #
-    confIPVar = tk.StringVar()
+    autoPdf,autoTsh,listTitle = setConfVals()
     confIPLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="Printer IP Address")
     confIPLabel.config(background = 'light blue')
     confIPLabel2 = ttk.Label(cw, width=cwinWd, font=('Segoe UI',10), anchor=tk.CENTER, relief='groove', text="(Use 192.168.254.254 for no printer)")
     confIPLabel2.config(background = 'light yellow')
     confIPEntry = ttk.Entry(cw, justify='center', textvariable = confIPVar, width=18)
-    confIPLabel.grid(column=0, row=1, padx=10, pady=10, sticky='n')
-    confIPLabel2.grid(column=0, row=2, padx=10, pady=10, sticky='n')
-    confIPEntry.grid(column=0, row=3, padx=10, pady=10, sticky='n')
+    confIPLabel.grid(column=0, row=1, padx=10, sticky='n')
+    confIPLabel2.grid(column=0, row=2, padx=10, sticky='n')
+    confIPEntry.grid(column=0, row=3, padx=10, sticky='n')
     confIPVar.set(ptrIP)
 
-    confTitleVar = tk.StringVar()
     confTitleLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="List Title")
     confTitleLabel.config(background = 'light blue')
+    confTitleLabel.grid(column=0, row=4, padx=10, sticky='n')
+
     confTitleEntry = ttk.Entry(cw, justify='center', textvariable = confTitleVar, width=18)
-    confTitleLabel.grid(column=0, row=4, padx=10, pady=10, sticky='n')
-    confTitleEntry.grid(column=0, row=5, padx=10, pady=10, sticky='n')
     confTitleVar.set(listTitle)
+    confTitleEntry.grid(column=0, row=5, padx=10, sticky='n')
+#
+##  Checkboxes in Config window.
+##  TSH stands for Title from spreadSHeet filename
 
-    confPDFVar = tk.StringVar()
-    confPDFLabel = ttk.Label(cw, width=cwinWd, font=('Segoe UI',12), anchor=tk.CENTER, relief='groove', text="Auto-create PDF List? (yes/no)")
-    confPDFLabel.config(background = 'light blue')
-    confPDFEntry = ttk.Entry(cw, justify='center', textvariable = confPDFVar, width=10)
-    confPDFLabel.grid(column=0, row=6, padx=10, pady=10, sticky='n')
-    confPDFEntry.grid(column=0, row=7, padx=10, pady=10, sticky='n')
-    confPDFVar.set(autoPdf)
+    confTSHChkBox = tk.Checkbutton(cw,text='List Title Same as Filename.', variable=confTSHVar, onvalue=1, offvalue=0, command=setConfVals)      # define it
+    confTSHChkBox.grid(column=0, row=6, sticky='n')                                                   # place it
 
-    cwbutton_cancel = ttk.Button(cw, text="Close", command=cw.destroy)                      # "Close" button
-    cwbutton_cancel.grid(column=0, row=8, padx=10, pady=10, sticky='n')                     # Place Close button in grid
+
+    confPDFChkBox = tk.Checkbutton(cw,text='Auto-create PDF List.', variable=confPDFVar, onvalue=1, offvalue=0, command=setConfVals)      # define it
+    confPDFChkBox.grid(column=0, row=7, sticky='n')                                                   # place it
 
     cwbutton_save = ttk.Button(cw, text="Save", command=saveConf)                           # "Save" button
-    cwbutton_save.grid(column=0, row=9, padx=10, pady=10, sticky='n')                       # Place Save button in grid
+    cwbutton_save.grid(column=0, row=9, padx=10, sticky='n')                       # Place Save button in grid
+
+    cwbutton_cancel = ttk.Button(cw, text="Cancel", command=cw.destroy)                      # "Close" button
+    cwbutton_cancel.grid(column=0, row=10, padx=10, sticky='n')                     # Place Close button in grid
+
     #
 
     #
@@ -407,7 +439,7 @@ def helpWindow():
 
     hw = Toplevel(window)
     hw.title("Help")
-    hwinWd = 400  # Set window size and placement
+    hwinWd = 600  # Set window size and placement
     hwinHt = 600
     x_Left = int(window.winfo_screenwidth() / 2 - hwinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - hwinHt / 2)
@@ -486,9 +518,6 @@ button_editData = ttk.Button(controlsFrame, text="Edit Database", command=editDa
 button_editData.grid(column=0, row=10, padx=10, pady=10, sticky='n')                       # Place Reload button in grid
 button_exit = ttk.Button(controlsFrame, text="Exit", command=exit)                      # "Exit" button
 button_exit.grid(column=0, row=11, padx=10, pady=10, sticky='n')                        # Place Exit button in grid
-#
-# editDataTip = Balloon(window)
-# editDataTip.bind_widget(button_editData,balloonmsg="Open your database, make your edit, close database.")
 #
 ## Set up check boxes
 #
