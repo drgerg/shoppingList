@@ -29,7 +29,7 @@ SL is intended for use with a networked 80mm ESC/POS receipt printer. There are 
 The python-escpos module is used to interface to with the printer.  It contains support for serial and USB protocols as well as network, but network is so simple that it is currently the default transport protocol. Perhaps in the future the other protocols can be added.
 
 THE FILE MENU: There are three options: Configure, Select Database, and Exit.  
- - Configure lets you set the IP address for the recipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in the same folder with ShoppingList.exe.
+ - Configure lets you set the IP address for the receipt printer as well as set your own title text for the top of your printed shopping list.  This is stored in ShoppingList.ini which is in the same folder with ShoppingList.exe.
     - When you set the title text, try to keep it less than around 20 characters long.
  - Select Database opens a Windows file selection dialog.  When you click on the file of your choice, the location of that file is saved in ShoppingList.ini.
 
@@ -45,7 +45,9 @@ You can actually use SL without a receipt printer by leaving the IP address at 1
 
  - PRINT: This . . . well, it prints your list.  Afterwards you will see a box asking if you want to exit or not.  If you exit, your current selections will be retained in the database.  If you want to remove them, select 'No' and go back and use the Clear All function to remove them.
 
-I compiled this using pyInstaller.  I chose the 1-Folder option rather than the 1-File option because it seems to load and run quicker.  Unzip the .zip file somewhere and make yourself a shortcut to the .exe file.  I have mine pinned to my Taskbar.
+I compiled this using pyInstaller.  I chose the 1-Folder option rather than the 1-File option because it seems to load and run quicker.  
+
+The installer is built using Inno Installer Compiler.  Installation and removal is just like any other Windows app.  
 
 You can always find the current version number in the 'About' dialog.
 
