@@ -47,7 +47,7 @@ You can actually use SL without a receipt printer by leaving the IP address at 1
 
 I compiled this using pyInstaller.  I chose the 1-Folder option rather than the 1-File option because it seems to load and run quicker.  
 
-The installer is built using Inno Installer Compiler.  Installation and removal is just like any other Windows app.  
+The installer is built using Inno Setup Compiler.  Installation and removal is just like any other Windows app.  
 
 You can always find the current version number in the 'About' dialog.
 
