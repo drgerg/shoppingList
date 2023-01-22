@@ -1,6 +1,6 @@
 # ShoppingList ChangeLog
 
-**v1.8** - Did a lot of little cleanup stuff, and added an option to let ShoppingList create the list title from the database filename.
+**v1.8** - I wanted SL to generally create a list title from the filename of the database I had loaded, so now that option exists in the Configuration menu.  I tweaked some other stuff here and there, too, in order to make getting from point A to B easier.
 
 Improved the help file a little and brought it up to date.
 
