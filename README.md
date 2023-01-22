@@ -1,7 +1,7 @@
 # shoppingList
 ![The List and The Printer](./pics/sm_ShpLstPrinter.jpg)
 
-ShoppingList is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
+**ShoppingList** is a no-cloud solution to your shopping woes. Private, secure and convenient, ShoppingList is revolutionizing the experience of the mundane grocery or Home Depot run.
 
 ShoppingList is written for Windows in Python. Tkinter is the Python module that creates the graphical interface.
 
@@ -10,7 +10,7 @@ ShoppingList ('SL' from here on) reads from an LibreOffice Calc or Excel .xlsx f
 SL reads data from the first four columns.  The first column must be named 'Qty', which is short for Quantity. Maybe in future releases that will be configurable, but for now, it seems like a pretty basic category to use for this sort of thing.
 
 
-## THE COOLEST PART: The Printer.
+### THE COOLEST PART: The Printer.
 
 SL is intended for use with a networked 80mm ESC/POS receipt printer. There are many under a hundred bucks to choose from. No more carrying that $900.00 phone around in your hand while navigating the treacherous aisles of your local grocery store.  Instead, your list is on a small piece of paper that won't break if it gets dropped.
 
@@ -25,7 +25,7 @@ SL optionally creates a PDF version of your list when you print. This file is sa
 
 You can actually use SL without a receipt printer by leaving the IP address at 192.168.254.254.  Select 'File/Configure' to set the IP address.
 
-## FUNCTIONS EXPLAINED:
+### FUNCTIONS EXPLAINED:
 
  - RELOAD: Once you've selected your database file and set your printer IP address, it's time to add some stuff to your list.  In your .xlsx database (aka, spreadsheet), add the quantities in the Qty column to the things you need to buy.  If you have SL open, after saving the database file you can press the 'Reload' button and your list will be displayed in the 'Selected items' box. In this way you can keep track of what you have added to your list as you go.
 
