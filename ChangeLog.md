@@ -6,7 +6,7 @@ Improved the help file a little and brought it up to date.
 
 Made a few adjustments that, in my opinion, make things work more smoothly.
 
-**v1.7.2** - Added a button that opens the database using the system's default app for spreadsheets. Close the database after editing, or you'll get a popup reminding you do close it. This is to avoid permissions errors. (only one app can have the spreadsheet open at one time)
+**v1.7.2** - Added a button that opens the database using the system's default app for spreadsheets. Close the database after editing, or you'll get a popup reminding you to close it. This is to avoid permissions errors. (only one app can have the spreadsheet open at one time)
 
 **v1.7.1** - Fixed an error that printed "None" instead of ignoring "None" cells.
 
