@@ -12,7 +12,7 @@ Made a few adjustments that, in my opinion, make things work more smoothly.
 
 **v1.7** - The Notes section previously did alright with wrapping, but in the actual list itself, not so much. So now, items in the list that are longer than the paper is wide are wrapped and indented on the second and subsequent lines.
 
-**v1.6.1** - Setup for Windows in a single .exe file using Inno Setup.
+**v1.6.1-Win** - Setup for Windows in a single .exe file using Inno Setup.
 
 This has been tested only on Windows 10 64-bit.
 
