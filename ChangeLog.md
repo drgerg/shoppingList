@@ -1,5 +1,7 @@
 # ShoppingList ChangeLog
 
+**v1.8.1** - A non-integer in the Qty column was causing the program to stop with a vague error message.  Now it tells you what the problem is, and sends you into the spreadsheet to edit.
+
 **v1.8** - I wanted SL to generally create a list title from the filename of the database I had loaded, so now that option exists in the Configuration menu.  I tweaked some other stuff here and there, too, in order to make getting from point A to B easier.
 
 Improved the help file a little and brought it up to date.

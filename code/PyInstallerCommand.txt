@@ -1,1 +1,1 @@
-pyinstaller --add-data=".\ShoppingList.ini;." --add-data=".\helpText.txt;." --add-binary=".\ico\shoppinglist_icon.ico;ico" --noconsole --icon=.\ico\shoppinglist_icon.ico ShoppingList.py
+pyinstaller --collect-data escpos --add-data=".\ShoppingList.ini;." --add-data=".\README.txt;." --add-binary=".\ico\shoppinglist_icon.ico;ico" --noconsole --icon=.\ico\shoppinglist_icon.ico ShoppingList.py

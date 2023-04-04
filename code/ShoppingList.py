@@ -32,7 +32,8 @@ from escpos.printer import Network
 from reportlab.pdfgen.canvas import Canvas
 
 
-version = "v1.8"
+version = "v1.8.1"
+# 1.8.1 - fix non-digit in Qty field problem.
 confparse = ConfigParser()
 path_to_dat = path.abspath(path.join(path.dirname(__file__), 'ShoppingList.ini'))
 
@@ -140,9 +141,9 @@ def printIt(final):
     stuffWrap = textwrap.fill(stuff, width=46)
     if ptrIP != '192.168.254.254':
         kitchen = Network(ptrIP)                                #Printer IP Address
-        kitchen.set(align='center',width=2,height=2)
+        kitchen.set(align='center', double_width=True, double_height=True)
         kitchen.text(listTitle + '\n')
-        kitchen.set(align='center', width=1,height=1)
+        kitchen.set(align='center', double_width=False, double_height=False)
         kitchen.text(tnowStr + '\n\n')
         kitchen.set(align='left')
         kitchen.text(stuffWrap)
@@ -221,13 +222,17 @@ def makeShoppingList(file,colName):
         ##
         ### LOOK THROUGH THE SPREADSHEET AND APPEND EVERY ROW THAT HAS 1 OR MORE IN THE QTY COLUMN.
         ##
-        for row in ws1.iter_rows(min_row=2, min_col=cv, max_col=4, values_only=True):    # Check cell validity
-            cell = row[0]
-            if cell is not None:
-                if cell != 0:
-                    if cell != " ":
-                        if cell >= 1:
-                            final.append(row)    # Add valid cell contents to final.
+        try:
+            for row in ws1.iter_rows(min_row=2, min_col=cv, max_col=4, values_only=True):    # Check cell validity
+                cell = row[0]
+                if cell is not None:
+                    if cell != 0:
+                        if cell != " ":
+                            if cell >= 1:
+                                final.append(row)    # Add valid cell contents to final.
+        except TypeError:
+            tk.messagebox.showinfo("Bad Value in Qty.", "You can only have digits in the Qty field.")
+            editData()
     return final
 
 
